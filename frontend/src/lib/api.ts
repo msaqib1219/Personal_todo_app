@@ -29,20 +29,22 @@ async function apiRequest<T>(
 ): Promise<T> {
   const token = await getAuthToken();
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers,
+    ...options.headers as Record<string, string>,
   };
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const fetchOptions: RequestInit = {
     ...options,
     headers,
     credentials: "include",
-  });
+  };
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
 
   if (response.status === 401) {
     if (typeof window !== "undefined") {

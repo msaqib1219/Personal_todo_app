@@ -1,8 +1,13 @@
-from sqlmodel import create_engine, Session, SQLModel
-from sqlalchemy.pool import NullPool
-from sqlalchemy.engine import Engine
-from src.config import config
+import logging
 from threading import Lock
+
+from sqlalchemy.engine import Engine
+from sqlalchemy.pool import NullPool
+from sqlmodel import Session, SQLModel, create_engine
+
+from src.config import config
+
+logger = logging.getLogger(__name__)
 
 _engine: Engine | None = None
 _engine_lock = Lock()
@@ -27,9 +32,19 @@ def get_engine() -> Engine:
 def get_session():
     engine = get_engine()
     with Session(engine) as session:
-        yield session
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            logger.exception("Database session failed; rolling back")
+            session.rollback()
+            raise
 
 
 def create_db_and_tables():
     engine = get_engine()
-    SQLModel.metadata.create_all(engine)
+    try:
+        SQLModel.metadata.create_all(engine)
+    except Exception:
+        logger.exception("Failed to create database tables")
+        raise

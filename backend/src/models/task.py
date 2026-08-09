@@ -1,7 +1,9 @@
-from sqlmodel import Field, SQLModel
+import enum
 from datetime import date, datetime
 from typing import Optional
-import enum
+
+from sqlmodel import Field, SQLModel
+
 
 class PriorityEnum(str, enum.Enum):
     high = "high"
@@ -25,7 +27,10 @@ class Task(SQLModel, table=True):
     __tablename__ = "tasks"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: str = Field(foreign_key="user.id", index=True)
+    # Logical FK to Better Auth's `user.id`. Not a DB-level constraint: that table is
+    # created and owned by Better Auth, so it is absent from SQLModel's metadata and
+    # create_all() cannot resolve it.
+    user_id: str = Field(index=True)
     title: str = Field(max_length=500)
     description: Optional[str] = Field(default=None)
     is_completed: bool = Field(default=False)

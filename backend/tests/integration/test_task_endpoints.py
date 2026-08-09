@@ -3,6 +3,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from datetime import date
 from fastapi.testclient import TestClient
 from src.main import app
+from src.auth import get_current_user_id
 from src.models.task import Task, PriorityEnum, CategoryEnum, RecurrenceEnum
 
 
@@ -20,9 +21,9 @@ class TestTaskEndpoints:
 
     @pytest.fixture
     def mock_auth(self, mock_user_id):
-        with patch("src.api.tasks.get_current_user_id") as mock:
-            mock.return_value = mock_user_id
-            yield mock
+        app.dependency_overrides[get_current_user_id] = lambda: mock_user_id
+        yield
+        app.dependency_overrides.pop(get_current_user_id, None)
 
     def test_get_tasks_requires_auth(self):
         response = client.get("/api/tasks")

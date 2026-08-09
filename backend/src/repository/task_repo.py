@@ -1,10 +1,22 @@
 from sqlmodel import Session, select, col
 from src.models.task import Task, PriorityEnum, CategoryEnum, RecurrenceEnum
+from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TaskFilters:
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    category: Optional[str] = None
+    search: Optional[str] = None
+    sort_by: str = "created_at"
+    sort_order: str = "desc"
+
 
 class TaskRepository:
     def __init__(self, session: Session):
@@ -13,7 +25,7 @@ class TaskRepository:
     def create(self, user_id: str, task: Task) -> Task:
         task.user_id = user_id
         self.session.add(task)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(task)
         logger.info(f"Created task {task.id} for user {user_id}")
         return task
@@ -22,35 +34,26 @@ class TaskRepository:
         statement = select(Task).where(Task.id == task_id, Task.user_id == user_id)
         return self.session.exec(statement).first()
 
-    def list(
-        self,
-        user_id: str,
-        status: Optional[str] = None,
-        priority: Optional[PriorityEnum] = None,
-        category: Optional[CategoryEnum] = None,
-        search: Optional[str] = None,
-        sort_by: str = "created_at",
-        sort_order: str = "desc",
-    ) -> List[Task]:
+    def list(self, user_id: str, filters: TaskFilters) -> List[Task]:
         statement = select(Task).where(Task.user_id == user_id)
 
-        if status == "active":
+        if filters.status == "active":
             statement = statement.where(Task.is_completed == False)
-        elif status == "completed":
+        elif filters.status == "completed":
             statement = statement.where(Task.is_completed == True)
 
-        if priority:
-            statement = statement.where(Task.priority == priority)
-        if category:
-            statement = statement.where(Task.category == category)
-        if search:
-            search_term = f"%{search}%"
+        if filters.priority:
+            statement = statement.where(Task.priority == filters.priority)
+        if filters.category:
+            statement = statement.where(Task.category == filters.category)
+        if filters.search:
+            search_term = f"%{filters.search}%"
             statement = statement.where(
                 Task.title.ilike(search_term) | Task.description.ilike(search_term)
             )
 
-        sort_column = getattr(Task, sort_by, Task.created_at)
-        if sort_order == "asc":
+        sort_column = getattr(Task, filters.sort_by, Task.created_at)
+        if filters.sort_order == "asc":
             statement = statement.order_by(sort_column.asc())
         else:
             statement = statement.order_by(sort_column.desc())
@@ -67,7 +70,7 @@ class TaskRepository:
                 setattr(task, key, value)
 
         self.session.add(task)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(task)
         logger.info(f"Updated task {task_id} for user {user_id}")
         return task
@@ -78,6 +81,6 @@ class TaskRepository:
             return False
 
         self.session.delete(task)
-        self.session.commit()
+        self.session.flush()
         logger.info(f"Deleted task {task_id} for user {user_id}")
         return True

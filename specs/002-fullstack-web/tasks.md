@@ -20,14 +20,14 @@
 **Purpose**: Project initialization, monorepo structure, dependency installation
 
 - [x] T001 Create monorepo directory structure: `backend/src/`, `backend/src/models/`, `backend/src/repository/`, `backend/src/services/`, `backend/src/api/`, `backend/tests/`, `frontend/src/`, `frontend/src/app/`, `frontend/src/components/`, `frontend/src/lib/`, `frontend/src/types/`
-- [ ] T002 [P] Initialize Python backend project with `backend/pyproject.toml` — dependencies: fastapi, sqlmodel, uvicorn, pyjwt, cryptography, python-dotenv, asyncpg, psycopg[binary], httpx; set `version = "0.1.0"`
-- [ ] T002a [P] Configure ruff for backend in `backend/pyproject.toml` — add [tool.ruff] section with line-length=88, select rules (E, F, I, W), isort settings, format settings; verify `ruff check .` and `ruff format --check .` pass on empty project
-- [ ] T003 [P] Initialize Next.js 16 frontend project with `frontend/package.json` — dependencies: next, react, better-auth, tailwindcss, typescript; set `"version": "0.1.0"`
-- [ ] T003a [P] Configure Biome for frontend in `frontend/biome.json` — add linter and formatter rules for TypeScript/TSX; add `lint` and `format` scripts to `frontend/package.json`
-- [ ] T004 [P] Create backend environment config template in `backend/.env.example` with DATABASE_URL, JWKS_URL, FRONTEND_URL
-- [ ] T005 [P] Create frontend environment config template in `frontend/.env.example` with NEXT_PUBLIC_API_URL, DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL
-- [ ] T006 [P] Create `backend/CLAUDE.md` with backend-specific development instructions — include: run commands (`uv run uvicorn`, `uv run pytest`), key file locations, Conventional Commits requirement (`type(scope): description`)
-- [ ] T007 [P] Create `frontend/CLAUDE.md` with frontend-specific development instructions — include: run commands (`npm run dev`, `npm test`), key file locations, Conventional Commits requirement (`type(scope): description`)
+- [x] T002 [P] Initialize Python backend project with `backend/pyproject.toml` — dependencies: fastapi, sqlmodel, uvicorn, pyjwt, cryptography, python-dotenv, asyncpg, psycopg[binary], httpx; set `version = "0.1.0"`
+- [x] T002a [P] Configure ruff for backend in `backend/pyproject.toml` — add [tool.ruff] section with line-length=88, select rules (E, F, I, W), isort settings, format settings; verify `ruff check .` and `ruff format --check .` pass on empty project
+- [x] T003 [P] Initialize Next.js 16 frontend project with `frontend/package.json` — dependencies: next, react, better-auth, tailwindcss, typescript; set `"version": "0.1.0"`
+- [x] T003a [P] Configure Biome for frontend in `frontend/biome.json` — add linter and formatter rules for TypeScript/TSX; add `lint` and `format` scripts to `frontend/package.json`
+- [x] T004 [P] Create backend environment config template in `backend/.env.example` with DATABASE_URL, JWKS_URL, FRONTEND_URL
+- [x] T005 [P] Create frontend environment config template in `frontend/.env.example` with NEXT_PUBLIC_API_URL, DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL
+- [x] T006 [P] Create `backend/CLAUDE.md` with backend-specific development instructions — include: run commands (`uv run uvicorn`, `uv run pytest`), key file locations, Conventional Commits requirement (`type(scope): description`)
+- [x] T007 [P] Create `frontend/CLAUDE.md` with frontend-specific development instructions — include: run commands (`npm run dev`, `npm test`), key file locations, Conventional Commits requirement (`type(scope): description`)
 
 ---
 
@@ -37,25 +37,25 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 Implement environment configuration loader in `backend/src/config.py` — load DATABASE_URL, JWKS_URL, FRONTEND_URL, LOG_FILE (default `~/.todo-app-web/app.log`) from .env using python-dotenv
-- [ ] T008a Implement structured logging module in `backend/src/logging_config.py` — configure Python logging with: JSON-structured format, configurable log file path (from LOG_FILE config), log levels (DEBUG/INFO/WARNING/ERROR), stdout + file handlers, startup/shutdown log entries
-- [ ] T009 Implement PostgreSQL database engine and session factory in `backend/src/repository/database.py` — SQLModel with NullPool for Neon PgBouncer compatibility, SSL required
-- [ ] T009a Create test infrastructure: `backend/tests/__init__.py`, `backend/tests/conftest.py` (shared fixtures: test DB session, mock JWT token), `backend/tests/unit/__init__.py`, `backend/tests/integration/__init__.py`
-- [ ] T010 Create Task SQLModel in `backend/src/models/task.py` — all fields from data-model.md (id, user_id, title, description, is_completed, priority, category, due_date, recurrence, due_time, reminder_minutes, reminder_sent, created_at, updated_at) with proper constraints and indexes
-- [ ] T011 Create `backend/src/models/__init__.py` exporting Task model
-- [ ] T012 Implement JWT verification middleware in `backend/src/auth.py` — use PyJWKClient to fetch JWKS from JWKS_URL, verify EdDSA tokens, extract user_id from payload, inject into request state; return 401 on invalid/missing token
-- [ ] T013 Create FastAPI app entry point in `backend/src/main.py` — configure CORS (allow FRONTEND_URL origin), include task router, add lifespan for DB table creation, mount auth dependency, configure logging on startup via logging_config
-- [ ] T013a [P] Write backend unit test for JWT verification in `backend/tests/unit/test_auth.py` — test valid token returns user_id, expired token returns 401, missing token returns 401, invalid signature returns 401 (RED: all must fail before T012 implementation is verified)
-- [ ] T013b [P] Write backend integration test for database connection in `backend/tests/integration/test_database.py` — test engine creation with valid URL, session factory produces working sessions, table creation via SQLModel (RED: must fail before T009 is verified)
-- [ ] T014 [P] Configure Better Auth server instance in `frontend/src/lib/auth.ts` — connect to Neon PostgreSQL, configure email/password provider, enable JWT plugin with JWKS endpoint
-- [ ] T015 [P] Configure Better Auth client instance in `frontend/src/lib/auth-client.ts` — client-side auth hooks (useSession, signIn, signUp, signOut)
-- [ ] T016 Create Better Auth catch-all API route in `frontend/src/app/api/auth/[...all]/route.ts` — export GET and POST handlers
-- [ ] T017 Create root layout in `frontend/src/app/layout.tsx` — HTML structure, Tailwind CSS setup, metadata
-- [ ] T018 Create backend API client (fetch wrapper) in `frontend/src/lib/api.ts` — attach JWT Bearer token from session, base URL from NEXT_PUBLIC_API_URL, handle 401 redirects
-- [ ] T019 Create Task TypeScript types in `frontend/src/types/task.ts` — matching backend Task model fields plus CreateTaskInput and UpdateTaskInput types
-- [ ] T020 Create `frontend/next.config.ts` with any required Next.js configuration
-- [ ] T021 Create `frontend/tsconfig.json` with strict TypeScript configuration and path aliases
-- [ ] T022 Configure Tailwind CSS in `frontend/tailwind.config.ts` with content paths
+- [x] T008 Implement environment configuration loader in `backend/src/config.py` — load DATABASE_URL, JWKS_URL, FRONTEND_URL, LOG_FILE (default `~/.todo-app-web/app.log`) from .env using python-dotenv
+- [x] T008a Implement structured logging module in `backend/src/logging_config.py` — configure Python logging with: JSON-structured format, configurable log file path (from LOG_FILE config), log levels (DEBUG/INFO/WARNING/ERROR), stdout + file handlers, startup/shutdown log entries
+- [x] T009 Implement PostgreSQL database engine and session factory in `backend/src/repository/database.py` — SQLModel with NullPool for Neon PgBouncer compatibility, SSL required
+- [x] T009a Create test infrastructure: `backend/tests/__init__.py`, `backend/tests/conftest.py` (shared fixtures: test DB session, mock JWT token), `backend/tests/unit/__init__.py`, `backend/tests/integration/__init__.py`
+- [x] T010 Create Task SQLModel in `backend/src/models/task.py` — all fields from data-model.md (id, user_id, title, description, is_completed, priority, category, due_date, recurrence, due_time, reminder_minutes, reminder_sent, created_at, updated_at) with proper constraints and indexes
+- [x] T011 Create `backend/src/models/__init__.py` exporting Task model
+- [x] T012 Implement JWT verification middleware in `backend/src/auth.py` — use PyJWKClient to fetch JWKS from JWKS_URL, verify EdDSA tokens, extract user_id from payload, inject into request state; return 401 on invalid/missing token
+- [x] T013 Create FastAPI app entry point in `backend/src/main.py` — configure CORS (allow FRONTEND_URL origin), include task router, add lifespan for DB table creation, mount auth dependency, configure logging on startup via logging_config
+- [x] T013a [P] Write backend unit test for JWT verification in `backend/tests/unit/test_auth.py` — test valid token returns user_id, expired token returns 401, missing token returns 401, invalid signature returns 401 (RED: all must fail before T012 implementation is verified)
+- [x] T013b [P] Write backend integration test for database connection in `backend/tests/integration/test_database.py` — test engine creation with valid URL, session factory produces working sessions, table creation via SQLModel (RED: must fail before T009 is verified)
+- [x] T014 [P] Configure Better Auth server instance in `frontend/src/lib/auth.ts` — connect to Neon PostgreSQL, configure email/password provider, enable JWT plugin with JWKS endpoint
+- [x] T015 [P] Configure Better Auth client instance in `frontend/src/lib/auth-client.ts` — client-side auth hooks (useSession, signIn, signUp, signOut)
+- [x] T016 Create Better Auth catch-all API route in `frontend/src/app/api/auth/[...all]/route.ts` — export GET and POST handlers
+- [x] T017 Create root layout in `frontend/src/app/layout.tsx` — HTML structure, Tailwind CSS setup, metadata
+- [x] T018 Create backend API client (fetch wrapper) in `frontend/src/lib/api.ts` — attach JWT Bearer token from session, base URL from NEXT_PUBLIC_API_URL, handle 401 redirects
+- [x] T019 Create Task TypeScript types in `frontend/src/types/task.ts` — matching backend Task model fields plus CreateTaskInput and UpdateTaskInput types
+- [x] T020 Create `frontend/next.config.ts` with any required Next.js configuration
+- [x] T021 Create `frontend/tsconfig.json` with strict TypeScript configuration and path aliases
+- [x] T022 Configure Tailwind CSS in `frontend/tailwind.config.ts` with content paths
 
 **Checkpoint**: Foundation ready — database connected, auth configured on both sides, API client ready. User story implementation can now begin.
 
@@ -69,11 +69,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T023 [P] [US1] Create sign-up page in `frontend/src/app/(auth)/sign-up/page.tsx` — email and password form, call Better Auth signUp, redirect to dashboard on success, show error on failure
-- [ ] T024 [P] [US1] Create sign-in page in `frontend/src/app/(auth)/sign-in/page.tsx` — email and password form, call Better Auth signIn, redirect to dashboard on success, show error on invalid credentials
-- [ ] T025 [US1] Create auth guard component in `frontend/src/components/auth-guard.tsx` — check session, redirect to sign-in if unauthenticated, render children if authenticated
-- [ ] T026 [US1] Create dashboard page shell in `frontend/src/app/dashboard/page.tsx` — wrap with auth-guard, display "Welcome" with user email, placeholder for task list
-- [ ] T027 [US1] Create landing/redirect page in `frontend/src/app/page.tsx` — redirect authenticated users to /dashboard, unauthenticated to /sign-in
+- [x] T023 [P] [US1] Create sign-up page in `frontend/src/app/(auth)/sign-up/page.tsx` — email and password form, call Better Auth signUp, redirect to dashboard on success, show error on failure
+- [x] T024 [P] [US1] Create sign-in page in `frontend/src/app/(auth)/sign-in/page.tsx` — email and password form, call Better Auth signIn, redirect to dashboard on success, show error on invalid credentials
+- [x] T025 [US1] Create auth guard component in `frontend/src/components/auth-guard.tsx` — check session, redirect to sign-in if unauthenticated, render children if authenticated
+- [x] T026 [US1] Create dashboard page shell in `frontend/src/app/dashboard/page.tsx` — wrap with auth-guard, display "Welcome" with user email, placeholder for task list
+- [x] T027 [US1] Create landing/redirect page in `frontend/src/app/page.tsx` — redirect authenticated users to /dashboard, unauthenticated to /sign-in
 
 **Checkpoint**: User Story 1 complete — users can register, sign in, sign out, and access protected dashboard. Auth guard prevents unauthorized access.
 
@@ -89,25 +89,25 @@
 
 ### Tests for User Story 2 (RED phase — must fail before implementation)
 
-- [ ] T027a [P] [US2] Write unit tests for TaskService validation in `backend/tests/unit/test_task_service.py` — test title empty rejected, title >500 chars rejected, invalid priority rejected, invalid category rejected, invalid due_time format rejected, negative reminder_minutes rejected, valid input accepted
-- [ ] T027b [P] [US2] Write integration tests for TaskRepository in `backend/tests/integration/test_task_repo.py` — test create task, get by id (own), get by id (other user returns None), list tasks (user-scoped), update task, delete task
-- [ ] T027c [P] [US2] Write contract tests for task endpoints in `backend/tests/integration/test_task_endpoints.py` — test POST /api/tasks returns 201, GET /api/tasks returns user's tasks only, GET /api/tasks/{id} returns 404 for other user's task, PUT returns updated task, DELETE returns 204, all endpoints return 401 without token
+- [x] T027a [P] [US2] Write unit tests for TaskService validation in `backend/tests/unit/test_task_service.py` — test title empty rejected, title >500 chars rejected, invalid priority rejected, invalid category rejected, invalid due_time format rejected, negative reminder_minutes rejected, valid input accepted
+- [x] T027b [P] [US2] Write integration tests for TaskRepository in `backend/tests/integration/test_task_repo.py` — test create task, get by id (own), get by id (other user returns None), list tasks (user-scoped), update task, delete task
+- [x] T027c [P] [US2] Write contract tests for task endpoints in `backend/tests/integration/test_task_endpoints.py` — test POST /api/tasks returns 201, GET /api/tasks returns user's tasks only, GET /api/tasks/{id} returns 404 for other user's task, PUT returns updated task, DELETE returns 204, all endpoints return 401 without token
 
 ### Backend Implementation
 
-- [ ] T028 [US2] Implement TaskRepository in `backend/src/repository/task_repo.py` — user-scoped CRUD methods: create(user_id, data), get_by_id(user_id, task_id), list(user_id, filters), update(user_id, task_id, data), delete(user_id, task_id); all queries filter by user_id
-- [ ] T029 [US2] Create `backend/src/repository/__init__.py` exporting TaskRepository
-- [ ] T030 [US2] Implement TaskService in `backend/src/services/task_service.py` — validation logic (title 1-500 chars, valid priority/category/recurrence enums, due_time HH:MM format, reminder_minutes non-negative), call repository methods
-- [ ] T031 [US2] Create `backend/src/services/__init__.py` exporting TaskService
-- [ ] T032 [US2] Implement task REST endpoints in `backend/src/api/tasks.py` — FastAPI router with: GET /api/tasks (list), POST /api/tasks (create, 201), GET /api/tasks/{task_id} (get single), PUT /api/tasks/{task_id} (update), DELETE /api/tasks/{task_id} (204); all require auth dependency (401 without valid token), extract user_id from request state; return 404 (not 403) when task belongs to another user (prevents user_id enumeration)
-- [ ] T033 [US2] Create `backend/src/api/__init__.py` and `backend/src/__init__.py` package init files
+- [x] T028 [US2] Implement TaskRepository in `backend/src/repository/task_repo.py` — user-scoped CRUD methods: create(user_id, data), get_by_id(user_id, task_id), list(user_id, filters), update(user_id, task_id, data), delete(user_id, task_id); all queries filter by user_id
+- [x] T029 [US2] Create `backend/src/repository/__init__.py` exporting TaskRepository
+- [x] T030 [US2] Implement TaskService in `backend/src/services/task_service.py` — validation logic (title 1-500 chars, valid priority/category/recurrence enums, due_time HH:MM format, reminder_minutes non-negative), call repository methods
+- [x] T031 [US2] Create `backend/src/services/__init__.py` exporting TaskService
+- [x] T032 [US2] Implement task REST endpoints in `backend/src/api/tasks.py` — FastAPI router with: GET /api/tasks (list), POST /api/tasks (create, 201), GET /api/tasks/{task_id} (get single), PUT /api/tasks/{task_id} (update), DELETE /api/tasks/{task_id} (204); all require auth dependency (401 without valid token), extract user_id from request state; return 404 (not 403) when task belongs to another user (prevents user_id enumeration)
+- [x] T033 [US2] Create `backend/src/api/__init__.py` and `backend/src/__init__.py` package init files
 
 ### Frontend Implementation
 
-- [ ] T034 [US2] Create task-form component in `frontend/src/components/task-form.tsx` — form with fields: title (required), description, priority (select: high/medium/low), category (select: work/home/personal/health/other), due_date (date input), recurrence (select: daily/weekly/monthly/yearly), due_time (time input), reminder_minutes (number input); submit calls API client POST /api/tasks
-- [ ] T035 [US2] Create task-card component in `frontend/src/components/task-card.tsx` — display task fields (title, priority badge, category, due date, status), edit button, delete button with confirmation
-- [ ] T036 [US2] Create task-list component in `frontend/src/components/task-list.tsx` — fetch tasks via API client GET /api/tasks, render list of task-card components, show empty state when no tasks
-- [ ] T037 [US2] Integrate task components into dashboard page in `frontend/src/app/dashboard/page.tsx` — add task-form for creation, task-list for display, handle create/edit/delete with optimistic UI updates or refetch
+- [x] T034 [US2] Create task-form component in `frontend/src/components/task-form.tsx` — form with fields: title (required), description, priority (select: high/medium/low), category (select: work/home/personal/health/other), due_date (date input), recurrence (select: daily/weekly/monthly/yearly), due_time (time input), reminder_minutes (number input); submit calls API client POST /api/tasks
+- [x] T035 [US2] Create task-card component in `frontend/src/components/task-card.tsx` — display task fields (title, priority badge, category, due date, status), edit button, delete button with confirmation
+- [x] T036 [US2] Create task-list component in `frontend/src/components/task-list.tsx` — fetch tasks via API client GET /api/tasks, render list of task-card components, show empty state when no tasks
+- [x] T037 [US2] Integrate task components into dashboard page in `frontend/src/app/dashboard/page.tsx` — add task-form for creation, task-list for display, handle create/edit/delete with optimistic UI updates or refetch
 
 **Checkpoint**: User Story 2 complete — full task CRUD working end-to-end. Users create, view, edit, delete tasks. User isolation enforced by backend.
 
@@ -121,18 +121,18 @@
 
 ### Tests for User Story 3 (RED phase — must fail before implementation)
 
-- [ ] T037a [P] [US3] Write unit test for recurrence logic in `backend/tests/unit/test_task_service.py` — test daily +1 day, weekly +7 days, monthly +1 month, yearly +1 year, no recurrence returns None
-- [ ] T037b [P] [US3] Write contract test for toggle endpoint in `backend/tests/integration/test_task_endpoints.py` — test PATCH /api/tasks/{id}/complete toggles status, completing recurring task creates new task with advanced due_date
+- [x] T037a [P] [US3] Write unit test for recurrence logic in `backend/tests/unit/test_task_service.py` — test daily +1 day, weekly +7 days, monthly +1 month, yearly +1 year, no recurrence returns None
+- [x] T037b [P] [US3] Write contract test for toggle endpoint in `backend/tests/integration/test_task_endpoints.py` — test PATCH /api/tasks/{id}/complete toggles status, completing recurring task creates new task with advanced due_date
 
 ### Backend Implementation
 
-- [ ] T038 [US3] Implement toggle completion endpoint PATCH /api/tasks/{task_id}/complete in `backend/src/api/tasks.py` — toggle is_completed; if completing + has recurrence + has due_date, call TaskService to create next occurrence with advanced due_date
-- [ ] T039 [US3] Implement recurrence logic in `backend/src/services/task_service.py` — method to compute next due_date (daily +1 day, weekly +7 days, monthly +1 month, yearly +1 year) and create new task with same fields but new due_date and is_completed=false
+- [x] T038 [US3] Implement toggle completion endpoint PATCH /api/tasks/{task_id}/complete in `backend/src/api/tasks.py` — toggle is_completed; if completing + has recurrence + has due_date, call TaskService to create next occurrence with advanced due_date
+- [x] T039 [US3] Implement recurrence logic in `backend/src/services/task_service.py` — method to compute next due_date (daily +1 day, weekly +7 days, monthly +1 month, yearly +1 year) and create new task with same fields but new due_date and is_completed=false
 
 ### Frontend Implementation
 
-- [ ] T040 [US3] Add completion toggle to task-card component in `frontend/src/components/task-card.tsx` — checkbox or toggle button, call API client PATCH /api/tasks/{id}/complete, update UI to reflect new status
-- [ ] T041 [US3] Handle new recurring task in task-list in `frontend/src/components/task-list.tsx` — after toggle completion, refetch task list to show newly created recurring task occurrence
+- [x] T040 [US3] Add completion toggle to task-card component in `frontend/src/components/task-card.tsx` — checkbox or toggle button, call API client PATCH /api/tasks/{id}/complete, update UI to reflect new status
+- [x] T041 [US3] Handle new recurring task in task-list in `frontend/src/components/task-list.tsx` — after toggle completion, refetch task list to show newly created recurring task occurrence
 
 **Checkpoint**: User Story 3 complete — task completion toggle works, recurring tasks auto-create next occurrence.
 
@@ -146,17 +146,17 @@
 
 ### Tests for User Story 4 (RED phase — must fail before implementation)
 
-- [ ] T041a [P] [US4] Write integration tests for filtered queries in `backend/tests/integration/test_task_repo.py` — test filter by status active/completed, filter by priority, filter by category, search by keyword (ILIKE), sort by created_at/due_date/title/priority asc/desc
+- [x] T041a [P] [US4] Write integration tests for filtered queries in `backend/tests/integration/test_task_repo.py` — test filter by status active/completed, filter by priority, filter by category, search by keyword (ILIKE), sort by created_at/due_date/title/priority asc/desc
 
 ### Backend Implementation
 
-- [ ] T042 [US4] Implement query parameter filtering in GET /api/tasks endpoint in `backend/src/api/tasks.py` — accept status (all/active/completed), priority, category, search (ILIKE on title+description), sort_by (created_at/due_date/title/priority), sort_order (asc/desc) per contracts/service-contracts.md
-- [ ] T043 [US4] Implement filtered/sorted query logic in `backend/src/repository/task_repo.py` — build dynamic SQLModel query with optional WHERE clauses and ORDER BY based on filter parameters
+- [x] T042 [US4] Implement query parameter filtering in GET /api/tasks endpoint in `backend/src/api/tasks.py` — accept status (all/active/completed), priority, category, search (ILIKE on title+description), sort_by (created_at/due_date/title/priority), sort_order (asc/desc) per contracts/service-contracts.md
+- [x] T043 [US4] Implement filtered/sorted query logic in `backend/src/repository/task_repo.py` — build dynamic SQLModel query with optional WHERE clauses and ORDER BY based on filter parameters
 
 ### Frontend Implementation
 
-- [ ] T044 [US4] Create task-filters component in `frontend/src/components/task-filters.tsx` — search input, status filter (all/active/completed), priority filter dropdown, category filter dropdown, sort field and direction selectors
-- [ ] T045 [US4] Integrate task-filters into dashboard in `frontend/src/app/dashboard/page.tsx` — pass filter state to task-list, update API calls with query parameters when filters change
+- [x] T044 [US4] Create task-filters component in `frontend/src/components/task-filters.tsx` — search input, status filter (all/active/completed), priority filter dropdown, category filter dropdown, sort field and direction selectors
+- [x] T045 [US4] Integrate task-filters into dashboard in `frontend/src/app/dashboard/page.tsx` — pass filter state to task-list, update API calls with query parameters when filters change
 
 **Checkpoint**: User Story 4 complete — search, filter, and sort all functional.
 
@@ -168,11 +168,11 @@
 
 **Independent Test**: Open app at desktop, tablet, and mobile widths — verify all features accessible and readable, buttons/inputs tap-friendly on mobile.
 
-- [ ] T046 [US5] Apply responsive styles to task-list and task-card in `frontend/src/components/task-list.tsx` and `frontend/src/components/task-card.tsx` — Tailwind responsive classes for grid/stack layout, readable spacing at all breakpoints
-- [ ] T047 [US5] Apply responsive styles to task-form in `frontend/src/components/task-form.tsx` — responsive form layout, tap-friendly inputs on mobile
-- [ ] T048 [US5] Apply responsive styles to task-filters in `frontend/src/components/task-filters.tsx` — collapsible or stacked filters on mobile
-- [ ] T049 [US5] Apply responsive styles to auth pages in `frontend/src/app/(auth)/sign-in/page.tsx` and `frontend/src/app/(auth)/sign-up/page.tsx` — centered card layout, mobile-friendly form
-- [ ] T050 [US5] Apply responsive styles to dashboard layout in `frontend/src/app/dashboard/page.tsx` — proper padding, max-width container, mobile navigation
+- [x] T046 [US5] Apply responsive styles to task-list and task-card in `frontend/src/components/task-list.tsx` and `frontend/src/components/task-card.tsx` — Tailwind responsive classes for grid/stack layout, readable spacing at all breakpoints
+- [x] T047 [US5] Apply responsive styles to task-form in `frontend/src/components/task-form.tsx` — responsive form layout, tap-friendly inputs on mobile
+- [x] T048 [US5] Apply responsive styles to task-filters in `frontend/src/components/task-filters.tsx` — collapsible or stacked filters on mobile
+- [x] T049 [US5] Apply responsive styles to auth pages in `frontend/src/app/(auth)/sign-in/page.tsx` and `frontend/src/app/(auth)/sign-up/page.tsx` — centered card layout, mobile-friendly form
+- [x] T050 [US5] Apply responsive styles to dashboard layout in `frontend/src/app/dashboard/page.tsx` — proper padding, max-width container, mobile navigation
 
 **Checkpoint**: User Story 5 complete — app usable on all screen sizes.
 
@@ -182,11 +182,20 @@
 
 **Purpose**: Final improvements affecting multiple user stories
 
-- [ ] T051 [P] Verify and update `backend/.env.example` and `frontend/.env.example` to match all documented variables from quickstart.md (including LOG_FILE for backend)
-- [ ] T052 [P] Add error boundary and friendly error messages for database unreachable / network errors in `frontend/src/app/layout.tsx` or a global error component
-- [ ] T053 Handle JWT token expiry in `frontend/src/lib/api.ts` — detect 401 responses, redirect to sign-in page
-- [ ] T054 [P] Verify logging coverage — confirm all key actions (task CRUD, auth failures, DB errors) produce structured log entries at appropriate levels in backend logs
-- [ ] T055 Run quickstart.md validation — follow all steps in `specs/002-fullstack-web/quickstart.md` to verify end-to-end setup works
+- [x] T051 [P] Verify and update `backend/.env.example` and `frontend/.env.example` to match all documented variables from quickstart.md (including LOG_FILE for backend)
+- [x] T052 [P] Add error boundary and friendly error messages for database unreachable / network errors in `frontend/src/app/layout.tsx` or a global error component
+- [x] T053 Handle JWT token expiry in `frontend/src/lib/api.ts` — detect 401 responses, redirect to sign-in page
+- [x] T054 [P] Verify logging coverage — confirm all key actions (task CRUD, auth failures, DB errors) produce structured log entries at appropriate levels in backend logs
+- [~] T055 Run quickstart.md validation — follow all steps in `specs/002-fullstack-web/quickstart.md` to verify end-to-end setup works
+
+**T055 status — partially validated.** Verified locally: `uv sync`, backend app boots (startup/shutdown logs emitted, all 6 task routes registered in OpenAPI, `/docs` 200, `/api/tasks` 401 without token); `npm install`, `npm run build` succeeds, dev server serves `/`, `/sign-in`, `/sign-up` (200) with email+password forms rendering; `uv run pytest` 36 passed.
+
+Remaining (blocked — requires a real Neon database, no credentials available in this environment): steps 4.2–4.3 of quickstart "Verify" — register an account and create a task end-to-end. With the placeholder `.env.example` host, both services fail exactly as expected at DNS resolution (`ENOTFOUND ep-xxx.region.neon.tech`), confirming wiring is correct but unexercised against a live DB. Re-run T055 once a Neon `DATABASE_URL` is provisioned.
+
+Quickstart defects found while validating (fix in `quickstart.md`):
+1. It references `uv run alembic upgrade head`, but Alembic is not a project dependency and no migrations directory exists — tables are created via `SQLModel.metadata.create_all()` in the app lifespan. Remove that line or actually adopt Alembic.
+2. "Running Tests" says `uv run pytest`, but pytest lives in the `dev` optional-dependency group, so a plain `uv sync` does not install it and the command fails with `Failed to spawn: pytest`. Setup step should be `uv sync --extra dev`.
+3. `npm test` is a placeholder (`echo "No tests configured yet"`) — there is no frontend test suite.
 
 ---
 
