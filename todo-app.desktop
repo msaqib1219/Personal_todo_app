@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=To Do App
+Comment=A personal task management application
+Exec=/home/saqib/Projects/PIAIC/To_do_App/scripts/launch_todo.sh
+Icon=text-editor
+Terminal=false
+Type=Application
+Categories=Utility;Office;
+StartupNotify=true

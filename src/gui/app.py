@@ -237,6 +237,12 @@ class TodoApp(ctk.CTk):
             controls, values=["asc", "desc"],
             variable=self._sort_order_var,
             command=lambda _: self._refresh_tasks(),
+        ).pack(side="left", padx=(0, 8))
+
+        ctk.CTkButton(
+            controls, text="Clear Completed", width=120,
+            fg_color="red", hover_color="darkred",
+            command=self._delete_all_completed,
         ).pack(side="left")
 
         # Task scroll area
@@ -677,6 +683,35 @@ class TodoApp(ctk.CTk):
             ).pack(side="left", padx=10)
 
         dialog.after(200, _build_delete_widgets)
+
+    def _delete_all_completed(self):
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Confirm Delete All Completed")
+        dialog.geometry("350x150")
+        dialog.resizable(False, False)
+
+        def _build_delete_all_widgets():
+            dialog.grab_set()
+            dialog.lift()
+            dialog.focus_force()
+
+            ctk.CTkLabel(dialog, text="Delete all completed tasks?").pack(pady=20)
+            btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+            btn_frame.pack(pady=10)
+
+            def confirm():
+                self._service.delete_all_completed()
+                dialog.destroy()
+                self._refresh_tasks()
+
+            ctk.CTkButton(
+                btn_frame, text="Delete All", fg_color="red", command=confirm, width=80
+            ).pack(side="left", padx=10)
+            ctk.CTkButton(
+                btn_frame, text="Cancel", fg_color="gray", command=dialog.destroy, width=80
+            ).pack(side="left", padx=10)
+
+        dialog.after(200, _build_delete_all_widgets)
 
     # ── Refresh & filtering ──────────────────────────────────────────
 
