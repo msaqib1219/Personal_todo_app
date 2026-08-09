@@ -1,28 +1,21 @@
 <!--
 Sync Impact Report
 ===================
-- Version change: 1.0.0 → 1.1.0 (MINOR: added Product Scope section,
-  updated tech stack from FastAPI web API to GUI desktop app)
-- Modified principles:
-  - II. Test-First: removed API endpoint contract reference,
-    added GUI interaction testing
-  - IV. Security: removed CORS/JWT/OAuth2 web references,
-    added local data protection
-  - V. Observability: removed API endpoint logging and /health,
-    added GUI-appropriate logging
-  - VI. Versioning: removed API versioning, kept DB migrations
-  - VII. Documentation: removed Swagger/OpenAPI references,
-    added GUI usage instructions
-- Added sections:
-  - Product Scope (In Scope / Out of Scope)
+- Version change: 1.1.0 → 2.0.0 (MAJOR: expanded scope from Phase I
+  desktop-only to include Phase II full-stack web application)
+- Modified sections:
+  - Product Scope: Split In Scope into Phase I + Phase II subsections
+  - Product Scope: Updated Out of Scope for Phase II context
+  - Technology Constraints: Split into Phase I, Phase II, and Shared
+  - IV. Security: Expanded for web context (JWT, CORS, JWKS)
+  - V. Observability: Added frontend logging guidance
+  - VII. Documentation: Added API docs reference
+- Added sections: N/A (expanded existing)
 - Removed sections: N/A
 - Templates requiring updates:
   - .specify/templates/plan-template.md ✅ no update needed
-    (Constitution Check section is dynamic)
   - .specify/templates/spec-template.md ✅ no update needed
-    (template is principle-agnostic)
   - .specify/templates/tasks-template.md ✅ no update needed
-    (task phases are dynamically generated)
 - Follow-up TODOs: none
 -->
 
@@ -32,6 +25,7 @@ Sync Impact Report
 
 ### In Scope
 
+#### Phase I (Local Desktop App)
 - **Add Task**: Create new todo items with title and details.
 - **Delete Task**: Remove tasks from the list.
 - **Update Task**: Modify existing task details.
@@ -40,16 +34,26 @@ Sync Impact Report
 - **GUI Interface**: Native desktop GUI (not web-based).
 - **Cross-Platform**: MUST work on Linux and Windows.
 
+#### Phase II (Full-Stack Web App)
+- **Web Frontend**: Next.js 16 responsive web interface.
+- **User Authentication**: Email/password registration and sign-in via Better Auth.
+- **Multi-User Isolation**: Each user sees only their own tasks.
+- **Cloud Database**: Neon Serverless PostgreSQL (shared by auth and task tables).
+- **RESTful API**: FastAPI backend exposing task CRUD and completion toggle.
+- **Recurring Tasks**: Auto-create next occurrence on completion.
+- **Search/Filter/Sort**: Keyword search, status/priority/category filters, multi-field sorting.
+
 ### Out of Scope
 
-- No web-based frontend (no browser UI, no REST/HTTP API).
-- No mobile app.
-- No user authentication or multi-user support (single local user).
-- No real-time sync, WebSockets, or push notifications.
-- No recurring todos, reminders, or scheduling.
+- No AI chatbot (Phase III).
+- No Kubernetes deployment (Phase IV).
+- No email notifications or push notifications.
+- No social login (Google, GitHub, etc.).
+- No password reset via email.
+- No real-time sync across browser tabs.
+- No offline support.
 - No file attachments.
 - No sharing or team/collaboration features.
-- No cloud deployment or server component.
 
 ## Core Principles
 
@@ -108,30 +112,35 @@ features, not engineering for scale that may never arrive.
 
 ### IV. Security
 
-Security basics MUST be enforced for local data protection.
+Security basics MUST be enforced for data protection.
 
 - No hardcoded secrets, tokens, or credentials. All configuration
   MUST reside in `.env` files or config files (excluded from version
   control via `.gitignore`).
-- All user input from GUI fields MUST be validated and sanitized
-  before database writes.
+- All user input (GUI fields or API request bodies) MUST be validated
+  and sanitized before database writes.
 - SQL injection MUST be prevented via parameterized queries or ORM
   usage (SQLAlchemy/SQLModel).
-- Local database file MUST have appropriate file permissions.
+- Phase I: Local database file MUST have appropriate file permissions.
+- Phase II: JWT authentication via JWKS verification (no shared
+  secrets between services). CORS MUST restrict origins to the
+  frontend URL. All API endpoints MUST enforce user-scoped access.
 
-**Rationale**: Even a local todo app stores personal data; basic
-input validation and safe DB access prevent data corruption and
-injection attacks.
+**Rationale**: Data protection applies at every layer — local file
+permissions for Phase I, JWT/CORS/user-scoping for Phase II.
 
 ### V. Observability
 
 All runtime behavior MUST be inspectable without attaching a debugger.
 
-- Structured logging MUST be used (Python `logging` module).
+- Structured logging MUST be used (Python `logging` module for
+  backend; console logging for frontend).
 - Application MUST log: startup, shutdown, errors, and key user
   actions (task created, deleted, updated) at appropriate log levels.
 - Errors MUST include stack traces and contextual data in logs.
-- Logs MUST be written to a log file in a configurable location.
+- Backend logs MUST be written to a log file in a configurable
+  location (LOG_FILE env var).
+- Frontend logging via browser console at appropriate levels.
 
 **Rationale**: When issues arise during demos or testing, structured
 logs enable rapid diagnosis without restarting the application.
@@ -159,21 +168,32 @@ Documentation MUST be kept current and minimal.
 - Complex business logic MUST have inline comments explaining "why",
   not "what".
 - No standalone documentation files unless explicitly requested.
+- Phase II: FastAPI auto-generates OpenAPI docs at `/docs`; no
+  separate API documentation files needed.
 
 **Rationale**: The README covers onboarding and usage; inline
-comments capture intent. No API docs needed for a GUI app.
+comments capture intent. Auto-generated API docs suffice for Phase II.
 
 ## Technology Constraints
 
+### Phase I
 - **Language**: Python 3.13
 - **Package Manager**: uv
-- **GUI Framework**: To be decided during planning (candidates:
-  Tkinter, PySide6/Qt, CustomTkinter, Dear PyGui).
-- **Testing**: pytest
-- **Linting/Formatting**: ruff
-- **Database**: SQLite (local file, via SQLAlchemy/SQLModel).
-- **Target Platforms**: Linux, Windows.
-- **Environment**: `.env` files or config files for settings.
+- **GUI Framework**: CustomTkinter
+- **Database**: SQLite (local file, via SQLModel)
+- **Target Platforms**: Linux, Windows
+
+### Phase II
+- **Backend**: Python 3.13, FastAPI, SQLModel, uvicorn, PyJWT, cryptography
+- **Frontend**: TypeScript, Next.js 16, React 19, Better Auth, Tailwind CSS
+- **Database**: Neon Serverless PostgreSQL (via psycopg + NullPool)
+- **Package Managers**: uv (backend), npm (frontend)
+- **Target Platforms**: Web browsers (desktop + mobile)
+
+### Shared
+- **Testing**: pytest (Python), vitest (TypeScript)
+- **Linting/Formatting**: ruff (Python), Biome (TypeScript)
+- **Environment**: `.env` files for settings (excluded from version control)
 
 ## Development Workflow
 
@@ -209,4 +229,4 @@ All development decisions MUST comply with these principles.
   Simplicity (III) takes precedence, but Security (IV) is never
   compromised.
 
-**Version**: 1.1.0 | **Ratified**: 2026-02-22 | **Last Amended**: 2026-02-22
+**Version**: 2.0.0 | **Ratified**: 2026-02-22 | **Last Amended**: 2026-03-05
