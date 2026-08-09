@@ -1,52 +1,263 @@
-# Personal Todo APP
+# The Evolution of Todo
 
-A cross-platform desktop GUI todo application built with Python and CustomTkinter.
+> From a simple script to a cloud-native AI system — a Spec-Driven Development journey.
 
-## Features
+[![Phase](https://img.shields.io/badge/Phase-I%20Complete-100%25-brightgreen)](#phase-i-desktop-app)
+[![Phase](https://img.shields.io/badge/Phase-II%20Complete-85%25-yellow)](#phase-ii-full-stack-web)
+[![Spec-Driven](https://img.shields.io/badge/Spec-Driven%20Development-Active-blue)](#spec-driven-development)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Powered-purple)](#ai-native-workflow)
 
-- Add, view, edit, and delete tasks
-- Mark tasks as complete/incomplete with visual feedback
-- Persistent SQLite storage
-- Dark/light mode (follows system theme)
-- Input validation (title: 1-500 characters)
+---
 
-## Prerequisites
+## What Is This?
 
-- Python 3.13+
-- [uv](https://docs.astral.sh/uv/) package manager
+A todo application that evolved from a desktop GUI script into a full-stack web application — built entirely through **Spec-Driven Development** with **Claude Code** as the primary implementation agent.
 
-## Setup
+This repository documents not just the code, but the **architecture of intelligence**: how specs, plans, tasks, and implementation artifacts chain together to form a reproducible, AI-native development workflow.
+
+**Current Status**: Phase I ✅ | Phase II 🔄 | Phase III ❌ | Phase IV ❌ | Phase V ❌
+
+See detailed progress: [`Project_status.md`](Project_status.md)
+
+---
+
+## The Evolution
+
+```
+Phase I                    Phase II                   Phase III (Planned)
+┌─────────────────┐        ┌─────────────────┐        ┌─────────────────┐
+│  Desktop GUI    │   →    │  Full-Stack Web │   →    │  AI Chatbot     │
+│  CustomTkinter  │        │  Next.js + FastAPI│       │  MCP + Agents   │
+│  SQLite         │        │  Neon PostgreSQL │        │  Natural Language│
+│  Single User    │        │  Multi-User Auth │        │  Conversational  │
+└─────────────────┘        └─────────────────┘        └─────────────────┘
+```
+
+### Phase I: Desktop App ✅
+
+A cross-platform desktop application with a Microsoft To Do-inspired redesign.
+
+**What was built**:
+- 3-pane layout: sidebar (smart lists + categories), main panel (task list), detail panel
+- Full CRUD: add, view, edit, delete tasks
+- Completion toggling with visual feedback
+- Priority levels (high/medium/low) and categories (work/home/personal/health/other)
+- Search, filter, and multi-field sorting
+- Recurring tasks (daily/weekly/monthly/yearly) with auto-creation on completion
+- Due dates with time pickers and desktop reminder notifications
+- Dark/light mode (auto-detects system theme)
+- Persistent SQLite storage with corruption recovery
+
+**Stack**: Python 3.13, CustomTkinter, SQLModel, SQLite
+
+**Key Decision**: See [ADR-0001: GUI and ORM Technology Stack](history/adr/0001-gui-and-orm-technology-stack.md)
+
+### Phase II: Full-Stack Web 🔄
+
+Transformed the desktop app into a multi-user web application with cloud database.
+
+**What was built**:
+- FastAPI backend with RESTful API endpoints
+- Better Auth integration with JWT verification (JWKS)
+- Neon Serverless PostgreSQL (cloud database)
+- Next.js 16 frontend with App Router
+- Responsive Tailwind CSS design
+- User isolation (each user sees only their tasks)
+- Recurring task logic preserved from Phase I
+- Comprehensive test suites (backend unit + integration)
+
+**Stack**: Next.js 16, FastAPI, SQLModel, Neon PostgreSQL, Better Auth, Tailwind CSS
+
+**Architecture**:
+```
+frontend/          backend/
+├── src/           ├── src/
+│   ├── app/       │   ├── api/
+│   ├── components/│   ├── models/
+│   └── lib/       │   ├── repository/
+│                  │   ├── services/
+│                  │   └── auth.py
+```
+
+---
+
+## Spec-Driven Development
+
+This project follows **Spec-Driven Development (SDD)** — a workflow where specifications drive implementation, not the other way around.
+
+### The Workflow
+
+```
+Constitution → Spec → Plan → Tasks → Implementation → ADRs
+     ↓            ↓       ↓        ↓           ↓          ↓
+  Principles   Details  Arch    Breakdown   Code     Decisions
+```
+
+### Artifacts
+
+| Artifact | Location | Purpose |
+|----------|----------|---------|
+| Constitution | `.specify/memory/constitution.md` | Project principles and constraints |
+| Specs | `specs/<feature>/` | Detailed feature specifications |
+| Plans | `specs/<feature>/plan.md` | Architecture and implementation plans |
+| Tasks | `specs/<feature>/tasks.md` | Breakdown of executable work items |
+| PHRs | `history/prompts/` | Prompt History Records (every interaction) |
+| ADRs | `history/adr/` | Architecture Decision Records |
+
+### Feature Branches
+
+| Branch | Feature | Status |
+|--------|---------|--------|
+| `001-todo-app` | Phase I Desktop App | ✅ Complete |
+| `002-fullstack-web` | Phase II Full-Stack Web | 🔄 In Progress |
+
+---
+
+## AI-Native Workflow
+
+Every implementation in this project was generated by **Claude Code** following the spec-driven workflow. The human acts as architect; Claude Code acts as builder.
+
+### How It Works
+
+1. **Write Spec**: Define what to build (user stories, acceptance criteria, requirements)
+2. **Generate Plan**: Architecture decisions, technology choices, component design
+3. **Break into Tasks**: Executable work items with clear dependencies
+4. **Implement via Claude Code**: Spec → Code generation → Tests → Refinement
+5. **Record Decisions**: ADRs capture architectural choices and tradeoffs
+
+### Evidence
+
+- **19 Prompt History Records** documenting every interaction
+- **60+ tests** in Phase I, comprehensive test suites in Phase II
+- **1 Architecture Decision Record** (GUI/ORM technology stack)
+- **25+ specification files** across two features
+
+---
+
+## Getting Started
+
+### Phase I (Desktop App)
 
 ```bash
+# Clone
+git clone <repo-url>
+cd To_do_App
+
+# Install
 uv sync
-```
 
-## Run
-
-```bash
+# Run
 uv run python main.py
-```
 
-## Test
-
-```bash
+# Test
 uv run pytest
-```
 
-## Lint
-
-```bash
+# Lint
 uv run ruff check .
 uv run ruff format --check .
 ```
 
-## Supported Platforms
+### Phase II (Full-Stack Web)
 
-- Linux
-- Windows
+```bash
+# Backend
+cd backend
+uv sync
+uv run uvicorn src.main:app --reload --port 8000
 
-## Data Location
+# Frontend
+cd frontend
+npm install
+npm run dev
+```
 
-All application data is stored in `~/.todo-app/`:
-- `tasks.db` — SQLite database
-- `app.log` — Application log file
+### Prerequisites
+
+- Python 3.13+
+- Node.js 18+
+- [uv](https://docs.astral.sh/uv/) package manager
+- Neon PostgreSQL account (for Phase II)
+
+---
+
+## Project Structure
+
+```
+To_do_App/
+├── .specify/                    # Spec-Kit configuration
+│   └── memory/constitution.md   # Project principles
+├── specs/                       # Feature specifications
+│   ├── 001-todo-app/           # Phase I specs
+│   └── 002-fullstack-web/      # Phase II specs
+├── history/                     # Development history
+│   ├── prompts/                 # Prompt History Records
+│   └── adr/                     # Architecture Decision Records
+├── src/                         # Phase I source code
+│   ├── gui/                     # CustomTkinter GUI
+│   ├── services/                # Business logic
+│   ├── repository/              # Data access
+│   └── models/                  # SQLModel entities
+├── backend/                     # Phase II backend
+│   └── src/
+│       ├── api/                 # FastAPI endpoints
+│       ├── auth.py              # JWT verification
+│       ├── models/              # SQLModel entities
+│       ├── repository/          # Data access
+│       └── services/            # Business logic
+├── frontend/                    # Phase II frontend
+│   └── src/
+│       ├── app/                 # Next.js App Router
+│       ├── components/          # React components
+│       └── lib/                 # Auth, API client
+├── Project_status.md            # Live progress tracker
+└── README.md                    # This file
+```
+
+---
+
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [`Project_status.md`](Project_status.md) | Phase-wise completion tracking |
+| [`constitution.md`](.specify/memory/constitution.md) | Project principles and constraints |
+| [`specs/001-todo-app/spec.md`](specs/001-todo-app/spec.md) | Phase I feature specification |
+| [`specs/002-fullstack-web/spec.md`](specs/002-fullstack-web/spec.md) | Phase II feature specification |
+| [`ADR-0001`](history/adr/0001-gui-and-orm-technology-stack.md) | GUI/ORM technology decision |
+
+### Wiki
+
+Detailed journey documentation available in the [Wiki](../../wiki):
+
+- Phase-by-phase journey narratives
+- Spec-Driven Development workflow guide
+- Claude Code collaboration patterns
+- Architecture decision summaries
+- Lessons learned
+
+---
+
+## Hackathon Context
+
+This project is part of **Hackathon II: The Evolution of Todo** — a 5-phase challenge to master Spec-Driven Development and Cloud-Native AI.
+
+**Goal**: Act as Product Architect, using AI to build progressively complex software without writing boilerplate code.
+
+**Phases**:
+1. In-Memory Python Console App (100 pts)
+2. Full-Stack Web Application (150 pts)
+3. AI-Powered Todo Chatbot (200 pts)
+4. Local Kubernetes Deployment (250 pts)
+5. Advanced Cloud Deployment (300 pts)
+
+**Bonus**: Reusable Intelligence (+200), Cloud-Native Blueprints (+200), Multi-language (+100), Voice Commands (+200)
+
+---
+
+## License
+
+MIT
+
+---
+
+*Built with Spec-Driven Development + Claude Code*

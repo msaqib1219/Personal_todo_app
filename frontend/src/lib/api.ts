@@ -8,7 +8,9 @@ async function getAuthToken(): Promise<string | null> {
   }
 
   try {
-    const response = await fetch("/api/auth/get-session", {
+    // /token issues the EdDSA JWT the backend verifies against JWKS.
+    // session.token is an opaque session id and will not pass verification.
+    const response = await fetch("/api/auth/token", {
       credentials: "include",
     });
 
@@ -17,7 +19,7 @@ async function getAuthToken(): Promise<string | null> {
     }
 
     const data = await response.json();
-    return data.session?.token || null;
+    return data.token || null;
   } catch {
     return null;
   }
