@@ -161,8 +161,17 @@ class TodoApp(ctk.CTk):
         sep.pack(fill="x", padx=15, pady=10)
 
         # Category lists
+        CATEGORY_ICONS = {
+            "work": "💼",
+            "home": "🏠",
+            "personal": "👤",
+            "health": "❤️",
+            "finance": "💰",
+            "other": "📦",
+        }
         for cat in VALID_CATEGORIES:
-            self._create_sidebar_item(cat, "📁", cat.capitalize())
+            icon = CATEGORY_ICONS.get(cat, "📁")
+            self._create_sidebar_item(cat, icon, cat.capitalize())
 
     def _create_sidebar_item(self, key, icon, label):
         frame = ctk.CTkFrame(self._sidebar, fg_color="transparent", cursor="hand2")
@@ -699,7 +708,16 @@ class TodoApp(ctk.CTk):
         if task.recurrence:
             parts.append(f"🔁 {task.recurrence}")
         if task.category:
-            parts.append(task.category)
+            CATEGORY_ICONS = {
+                "work": "💼",
+                "home": "🏠",
+                "personal": "👤",
+                "health": "❤️",
+                "finance": "💰",
+                "other": "📦",
+            }
+            icon = CATEGORY_ICONS.get(task.category, "📁")
+            parts.append(f"{icon} {task.category}")
 
         if parts:
             sub_lbl = ctk.CTkLabel(
