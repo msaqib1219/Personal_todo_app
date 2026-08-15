@@ -40,8 +40,8 @@ SORT_OPTIONS = {
 SMART_LISTS = [
     ("my_day", "☀", "My Day"),
     ("important", "★", "Important"),
-    ("planned", "📅", "Planned"),
-    ("all", "☐", "All Tasks"),
+    ("planned", "🗓", "Planned"),
+    ("all", "☑", "All Tasks"),
 ]
 
 
@@ -162,15 +162,15 @@ class TodoApp(ctk.CTk):
 
         # Category lists
         CATEGORY_ICONS = {
-            "work": "💼",
-            "home": "🏠",
-            "personal": "👤",
-            "health": "❤️",
-            "finance": "💰",
-            "other": "📦",
+            "work": "[W]",
+            "home": "[H]",
+            "personal": "[P]",
+            "health": "[+]",
+            "finance": "[$]",
+            "other": "[*]",
         }
         for cat in VALID_CATEGORIES:
-            icon = CATEGORY_ICONS.get(cat, "📁")
+            icon = CATEGORY_ICONS.get(cat, "[?]")
             self._create_sidebar_item(cat, icon, cat.capitalize())
 
     def _create_sidebar_item(self, key, icon, label):
@@ -709,14 +709,14 @@ class TodoApp(ctk.CTk):
             parts.append(f"🔁 {task.recurrence}")
         if task.category:
             CATEGORY_ICONS = {
-                "work": "💼",
-                "home": "🏠",
-                "personal": "👤",
-                "health": "❤️",
-                "finance": "💰",
-                "other": "📦",
+                "work": "[W]",
+                "home": "[H]",
+                "personal": "[P]",
+                "health": "[+]",
+                "finance": "[$]",
+                "other": "[*]",
             }
-            icon = CATEGORY_ICONS.get(task.category, "📁")
+            icon = CATEGORY_ICONS.get(task.category, "[?]")
             parts.append(f"{icon} {task.category}")
 
         if parts:
