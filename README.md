@@ -2,11 +2,6 @@
 
 > From a simple script to a cloud-native AI system — a Spec-Driven Development journey.
 
-[![Phase](https://img.shields.io/badge/Phase-I%20Complete-100%25-brightgreen)](#phase-i-desktop-app)
-[![Phase](https://img.shields.io/badge/Phase-II%20Complete-85%25-yellow)](#phase-ii-full-stack-web)
-[![Spec-Driven](https://img.shields.io/badge/Spec-Driven%20Development-Active-blue)](#spec-driven-development)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-Powered-purple)](#ai-native-workflow)
-
 ---
 
 ## What Is This?
