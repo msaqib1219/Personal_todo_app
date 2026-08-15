@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from src.config import config
 
+
 class JSONFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         log_data = {
@@ -18,6 +19,7 @@ class JSONFormatter(logging.Formatter):
         if hasattr(record, "extra_data"):
             log_data["extra"] = record.extra_data
         return json.dumps(log_data)
+
 
 def setup_logging() -> None:
     log_path = Path(config.LOG_FILE)
@@ -45,13 +47,22 @@ def setup_logging() -> None:
     logging.getLogger("uvicorn.error").handlers = root_logger.handlers
     logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
+
 def log_startup() -> None:
-    logging.getLogger(__name__).info("Application starting", extra={"extra_data": {"config": {
-        "database_url": config.DATABASE_URL[:20] + "...",
-        "jwks_url": config.JWKS_URL,
-        "frontend_url": config.FRONTEND_URL,
-        "log_file": config.LOG_FILE,
-    }}})
+    logging.getLogger(__name__).info(
+        "Application starting",
+        extra={
+            "extra_data": {
+                "config": {
+                    "database_url": config.DATABASE_URL[:20] + "...",
+                    "jwks_url": config.JWKS_URL,
+                    "frontend_url": config.FRONTEND_URL,
+                    "log_file": config.LOG_FILE,
+                }
+            }
+        },
+    )
+
 
 def log_shutdown() -> None:
     logging.getLogger(__name__).info("Application shutting down")

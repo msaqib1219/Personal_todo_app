@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 jwks_client = PyJWKClient(config.JWKS_URL)
 security = HTTPBearer(auto_error=False)
 
+
 async def get_current_user_id(
     request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(security),

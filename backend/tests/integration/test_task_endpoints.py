@@ -43,7 +43,9 @@ class TestTaskEndpoints:
             ]
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/tasks", headers={"Authorization": "Bearer token"})
+            response = client.get(
+                "/api/tasks", headers={"Authorization": "Bearer token"}
+            )
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -79,7 +81,9 @@ class TestTaskEndpoints:
             mock_service.get_task.return_value = None
             mock_service_class.return_value = mock_service
 
-            response = client.get("/api/tasks/999", headers={"Authorization": "Bearer token"})
+            response = client.get(
+                "/api/tasks/999", headers={"Authorization": "Bearer token"}
+            )
 
         assert response.status_code == 404
 

@@ -57,7 +57,9 @@ class TestTaskServiceValidation:
 
     def test_negative_reminder_minutes_rejected(self, task_service):
         data = {"title": "Task", "reminder_minutes": -5}
-        with pytest.raises(ValueError, match="reminder_minutes must be a non-negative integer"):
+        with pytest.raises(
+            ValueError, match="reminder_minutes must be a non-negative integer"
+        ):
             task_service.validate_task_data(data)
 
     def test_valid_input_accepted(self, task_service):
@@ -80,17 +82,23 @@ class TestRecurrenceLogic:
 
     def test_weekly_recurrence_adds_seven_days(self, task_service):
         current = date(2026, 3, 5)
-        next_date = task_service._calculate_next_due_date(current, RecurrenceEnum.weekly)
+        next_date = task_service._calculate_next_due_date(
+            current, RecurrenceEnum.weekly
+        )
         assert next_date == date(2026, 3, 12)
 
     def test_monthly_recurrence_adds_one_month(self, task_service):
         current = date(2026, 3, 5)
-        next_date = task_service._calculate_next_due_date(current, RecurrenceEnum.monthly)
+        next_date = task_service._calculate_next_due_date(
+            current, RecurrenceEnum.monthly
+        )
         assert next_date == date(2026, 4, 5)
 
     def test_yearly_recurrence_adds_one_year(self, task_service):
         current = date(2026, 3, 5)
-        next_date = task_service._calculate_next_due_date(current, RecurrenceEnum.yearly)
+        next_date = task_service._calculate_next_due_date(
+            current, RecurrenceEnum.yearly
+        )
         assert next_date == date(2027, 3, 5)
 
     def test_no_recurrence_returns_none(self, task_service):

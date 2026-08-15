@@ -10,12 +10,14 @@ class TestDatabaseConnection:
     @pytest.fixture
     def test_engine(self):
         from src.models.task import Task  # noqa: F401 — register table in metadata
+
         engine = create_engine("sqlite:///:memory:", echo=False)
         SQLModel.metadata.create_all(engine)
         return engine
 
     def test_engine_creation(self):
         import src.repository.database as db
+
         db._engine = None
         engine = db.get_engine()
         assert engine is not None
@@ -27,6 +29,7 @@ class TestDatabaseConnection:
 
     def test_table_creation_via_sqlmodel(self, test_engine):
         from src.models.task import Task
+
         inspector = __import__("sqlalchemy").inspect(test_engine)
         tables = inspector.get_table_names()
         assert "tasks" in tables

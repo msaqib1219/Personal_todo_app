@@ -166,7 +166,8 @@ class TaskService:
             )
             logger.info(
                 "Recurring task created: next due_date=%s recurrence=%s",
-                next_date, task.recurrence,
+                next_date,
+                task.recurrence,
             )
         return task
 

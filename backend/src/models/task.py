@@ -10,18 +10,22 @@ class PriorityEnum(str, enum.Enum):
     medium = "medium"
     low = "low"
 
+
 class CategoryEnum(str, enum.Enum):
     work = "work"
     home = "home"
     personal = "personal"
     health = "health"
+    finance = "finance"
     other = "other"
+
 
 class RecurrenceEnum(str, enum.Enum):
     daily = "daily"
     weekly = "weekly"
     monthly = "monthly"
     yearly = "yearly"
+
 
 class Task(SQLModel, table=True):
     __tablename__ = "tasks"
@@ -42,4 +46,6 @@ class Task(SQLModel, table=True):
     reminder_minutes: Optional[int] = Field(default=None, ge=0)
     reminder_sent: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
+    updated_at: datetime = Field(
+        default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow}
+    )
