@@ -166,7 +166,8 @@ class TaskService:
             )
             logger.info(
                 "Recurring task created: next due_date=%s recurrence=%s",
-                next_date, task.recurrence,
+                next_date,
+                task.recurrence,
             )
         return task
 
@@ -175,3 +176,9 @@ class TaskService:
         if not deleted:
             raise KeyError(f"Task {task_id} not found")
         logger.info("Task deleted: id=%s", task_id)
+
+    def delete_all_completed(self) -> int:
+        """Delete all completed tasks. Returns count of deleted tasks."""
+        count = self._repo.delete_all_completed()
+        logger.info("Deleted %s completed tasks", count)
+        return count

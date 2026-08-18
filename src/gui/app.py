@@ -8,6 +8,10 @@ from tkcalendar import DateEntry
 from src.models.task import VALID_CATEGORIES, VALID_PRIORITIES, VALID_RECURRENCES
 from src.services.task_service import TaskService
 
+# Ensure finance is in VALID_CATEGORIES
+if "finance" not in VALID_CATEGORIES:
+    VALID_CATEGORIES = (*VALID_CATEGORIES, "finance")
+
 # ── Color constants ──
 ACCENT_BLUE = "#2564CF"
 ACCENT_BLUE_HOVER = "#1B4EA3"
@@ -35,9 +39,9 @@ SORT_OPTIONS = {
 # Smart list definitions: (key, icon, label)
 SMART_LISTS = [
     ("my_day", "☀", "My Day"),
-    ("important", "⭐", "Important"),
-    ("planned", "📅", "Planned"),
-    ("all", "📋", "All Tasks"),
+    ("important", "★", "Important"),
+    ("planned", "🗓", "Planned"),
+    ("all", "☑", "All Tasks"),
 ]
 
 
@@ -60,7 +64,11 @@ class CalendarDialog(ctk.CTkToplevel):
 
         init = self._initial_date or date.today()
         self._cal = DateEntry(
-            self, selectmode="day", year=init.year, month=init.month, day=init.day,
+            self,
+            selectmode="day",
+            year=init.year,
+            month=init.month,
+            day=init.day,
             date_pattern="yyyy-mm-dd",
         )
         self._cal.pack(padx=20, pady=20, fill="x")
@@ -74,7 +82,11 @@ class CalendarDialog(ctk.CTkToplevel):
             side="left", padx=10
         )
         ctk.CTkButton(
-            btn_frame, text="Cancel", command=self.destroy, width=80, fg_color="gray",
+            btn_frame,
+            text="Cancel",
+            command=self.destroy,
+            width=80,
+            fg_color="gray",
         ).pack(side="left", padx=10)
 
     def _select(self):
@@ -102,6 +114,8 @@ class TodoApp(ctk.CTk):
         self._active_view = "my_day"
         self._detail_task = None
         self._sidebar_items = {}  # key -> (frame, count_label)
+        self._selected_tasks = set()  # set of selected task IDs
+        self._selection_mode = False
 
         self._build_ui()
         self._refresh_tasks()
@@ -122,14 +136,18 @@ class TodoApp(ctk.CTk):
 
     def _build_sidebar(self):
         self._sidebar = ctk.CTkFrame(
-            self, width=SIDEBAR_WIDTH, fg_color=SIDEBAR_BG, corner_radius=0,
+            self,
+            width=SIDEBAR_WIDTH,
+            fg_color=SIDEBAR_BG,
+            corner_radius=0,
         )
         self._sidebar.grid(row=0, column=0, sticky="ns")
         self._sidebar.grid_propagate(False)
 
         # App title
         ctk.CTkLabel(
-            self._sidebar, text="To Do",
+            self._sidebar,
+            text="To Do",
             font=ctk.CTkFont(size=20, weight="bold"),
             text_color=ACCENT_BLUE,
         ).pack(padx=15, pady=(20, 15), anchor="w")
@@ -143,8 +161,17 @@ class TodoApp(ctk.CTk):
         sep.pack(fill="x", padx=15, pady=10)
 
         # Category lists
+        CATEGORY_ICONS = {
+            "work": "[W]",
+            "home": "[H]",
+            "personal": "[P]",
+            "health": "[+]",
+            "finance": "[$]",
+            "other": "[*]",
+        }
         for cat in VALID_CATEGORIES:
-            self._create_sidebar_item(cat, "📁", cat.capitalize())
+            icon = CATEGORY_ICONS.get(cat, "[?]")
+            self._create_sidebar_item(cat, icon, cat.capitalize())
 
     def _create_sidebar_item(self, key, icon, label):
         frame = ctk.CTkFrame(self._sidebar, fg_color="transparent", cursor="hand2")
@@ -208,7 +235,8 @@ class TodoApp(ctk.CTk):
         header.grid_columnconfigure(0, weight=1)
 
         self._header_title = ctk.CTkLabel(
-            header, text="My Day",
+            header,
+            text="My Day",
             font=ctk.CTkFont(size=22, weight="bold"),
             anchor="w",
         )
@@ -221,27 +249,64 @@ class TodoApp(ctk.CTk):
         self._search_var = ctk.StringVar()
         self._search_var.trace_add("write", lambda *_: self._refresh_tasks())
         ctk.CTkEntry(
-            controls, textvariable=self._search_var, width=160,
+            controls,
+            textvariable=self._search_var,
+            width=160,
             placeholder_text="🔍 Search...",
         ).pack(side="left", padx=(0, 8))
 
         self._sort_var = ctk.StringVar(value="Created Date")
         ctk.CTkOptionMenu(
-            controls, variable=self._sort_var,
-            values=list(SORT_OPTIONS.keys()), width=130,
+            controls,
+            variable=self._sort_var,
+            values=list(SORT_OPTIONS.keys()),
+            width=130,
             command=lambda _: self._refresh_tasks(),
         ).pack(side="left", padx=(0, 8))
 
         self._sort_order_var = ctk.StringVar(value="desc")
         ctk.CTkSegmentedButton(
-            controls, values=["asc", "desc"],
+            controls,
+            values=["asc", "desc"],
             variable=self._sort_order_var,
             command=lambda _: self._refresh_tasks(),
+        ).pack(side="left", padx=(0, 8))
+
+        # Selection mode button
+        self._select_mode_btn = ctk.CTkButton(
+            controls,
+            text="☑ Select Tasks",
+            width=120,
+            command=self._toggle_selection_mode,
+        )
+        self._select_mode_btn.pack(side="left", padx=(0, 8))
+
+        # Export button (only visible in selection mode)
+        self._export_btn = ctk.CTkButton(
+            controls,
+            text="📤 Export MD",
+            width=110,
+            fg_color=ACCENT_BLUE,
+            hover_color=ACCENT_BLUE_HOVER,
+            command=self._export_selected_to_markdown,
+        )
+        self._export_btn.pack(side="left", padx=(0, 8))
+        self._export_btn.pack_forget()  # Hidden by default
+
+        ctk.CTkButton(
+            controls,
+            text="Clear Completed",
+            width=120,
+            fg_color="red",
+            hover_color="darkred",
+            command=self._delete_all_completed,
         ).pack(side="left")
 
         # Task scroll area
         self._task_frame = ctk.CTkScrollableFrame(
-            self._main_panel, fg_color=MAIN_BG, corner_radius=0,
+            self._main_panel,
+            fg_color=MAIN_BG,
+            corner_radius=0,
         )
         self._task_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
 
@@ -251,14 +316,18 @@ class TodoApp(ctk.CTk):
         add_bar.grid_columnconfigure(0, weight=1)
 
         self._add_entry = ctk.CTkEntry(
-            add_bar, placeholder_text="+ Add a task", height=40,
+            add_bar,
+            placeholder_text="+ Add a task",
+            height=40,
         )
         self._add_entry.grid(row=0, column=0, sticky="ew")
         self._add_entry.bind("<Return>", lambda e: self._add_task())
 
         # Error label
         self._error_label = ctk.CTkLabel(
-            self._main_panel, text="", text_color="red",
+            self._main_panel,
+            text="",
+            text_color="red",
         )
         self._error_label.grid(row=3, column=0, sticky="w", padx=20)
 
@@ -266,7 +335,10 @@ class TodoApp(ctk.CTk):
 
     def _build_detail_panel(self):
         self._detail_panel = ctk.CTkFrame(
-            self, width=DETAIL_PANEL_WIDTH, fg_color=DETAIL_BG, corner_radius=0,
+            self,
+            width=DETAIL_PANEL_WIDTH,
+            fg_color=DETAIL_BG,
+            corner_radius=0,
         )
         # Hidden by default
         self._detail_visible = False
@@ -296,15 +368,20 @@ class TodoApp(ctk.CTk):
             return
 
         scroll = ctk.CTkScrollableFrame(
-            self._detail_panel, fg_color="transparent",
+            self._detail_panel,
+            fg_color="transparent",
             width=DETAIL_PANEL_WIDTH - 20,
         )
         scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
         # Close button
         close_btn = ctk.CTkButton(
-            scroll, text="✕", width=30, height=30,
-            fg_color="transparent", hover_color=("gray85", "gray30"),
+            scroll,
+            text="✕",
+            width=30,
+            height=30,
+            fg_color="transparent",
+            hover_color=("gray85", "gray30"),
             command=self._close_detail,
         )
         close_btn.pack(anchor="e", padx=5, pady=(5, 0))
@@ -315,14 +392,19 @@ class TodoApp(ctk.CTk):
 
         self._detail_completed_var = ctk.BooleanVar(value=task.is_completed)
         ctk.CTkCheckBox(
-            title_row, text="", variable=self._detail_completed_var,
-            width=30, fg_color=ACCENT_BLUE, hover_color=ACCENT_BLUE_HOVER,
+            title_row,
+            text="",
+            variable=self._detail_completed_var,
+            width=30,
+            fg_color=ACCENT_BLUE,
+            hover_color=ACCENT_BLUE_HOVER,
             command=self._toggle_detail_task,
         ).pack(side="left", padx=(0, 8))
 
         self._detail_title_var = ctk.StringVar(value=task.title)
         title_entry = ctk.CTkEntry(
-            title_row, textvariable=self._detail_title_var,
+            title_row,
+            textvariable=self._detail_title_var,
             font=ctk.CTkFont(size=16, weight="bold"),
         )
         title_entry.pack(side="left", fill="x", expand=True)
@@ -337,11 +419,11 @@ class TodoApp(ctk.CTk):
 
         # Priority star
         pri_frame = _add_field(scroll, "Priority")
-        self._detail_star_var = ctk.StringVar(
-            value="★" if task.priority == "high" else "☆"
-        )
+        self._detail_star_var = ctk.StringVar(value="★" if task.priority == "high" else "☆")
         self._detail_star_btn = ctk.CTkButton(
-            pri_frame, textvariable=self._detail_star_var, width=35,
+            pri_frame,
+            textvariable=self._detail_star_var,
+            width=35,
             fg_color="transparent",
             text_color=STAR_ACTIVE if task.priority == "high" else STAR_INACTIVE,
             hover_color=("gray85", "gray30"),
@@ -352,18 +434,21 @@ class TodoApp(ctk.CTk):
 
         # Due date
         due_frame = _add_field(scroll, "Due Date")
-        self._detail_due_var = ctk.StringVar(
-            value=str(task.due_date) if task.due_date else ""
-        )
+        self._detail_due_var = ctk.StringVar(value=str(task.due_date) if task.due_date else "")
         due_entry = ctk.CTkEntry(
-            due_frame, textvariable=self._detail_due_var, width=140,
+            due_frame,
+            textvariable=self._detail_due_var,
+            width=140,
             placeholder_text="YYYY-MM-DD",
         )
         due_entry.pack(side="left")
         due_entry.bind("<FocusOut>", lambda e: self._auto_save_detail())
         ctk.CTkButton(
-            due_frame, text="📅", width=30,
-            fg_color="transparent", hover_color=("gray85", "gray30"),
+            due_frame,
+            text="📅",
+            width=30,
+            fg_color="transparent",
+            hover_color=("gray85", "gray30"),
             command=self._open_detail_calendar,
         ).pack(side="left", padx=4)
 
@@ -371,8 +456,10 @@ class TodoApp(ctk.CTk):
         rec_frame = _add_field(scroll, "Recurrence")
         self._detail_recurrence_var = ctk.StringVar(value=task.recurrence or "None")
         ctk.CTkOptionMenu(
-            rec_frame, variable=self._detail_recurrence_var,
-            values=list(RECURRENCE_LABELS), width=140,
+            rec_frame,
+            variable=self._detail_recurrence_var,
+            values=list(RECURRENCE_LABELS),
+            width=140,
             command=lambda _: self._auto_save_detail(),
         ).pack(side="left")
 
@@ -380,7 +467,9 @@ class TodoApp(ctk.CTk):
         time_frame = _add_field(scroll, "Due Time")
         self._detail_time_var = ctk.StringVar(value=task.due_time or "")
         time_entry = ctk.CTkEntry(
-            time_frame, textvariable=self._detail_time_var, width=140,
+            time_frame,
+            textvariable=self._detail_time_var,
+            width=140,
             placeholder_text="HH:MM",
         )
         time_entry.pack(side="left")
@@ -392,7 +481,9 @@ class TodoApp(ctk.CTk):
             value=str(task.reminder_minutes) if task.reminder_minutes is not None else ""
         )
         rem_entry = ctk.CTkEntry(
-            rem_frame, textvariable=self._detail_reminder_var, width=140,
+            rem_frame,
+            textvariable=self._detail_reminder_var,
+            width=140,
             placeholder_text="minutes before",
         )
         rem_entry.pack(side="left")
@@ -402,14 +493,18 @@ class TodoApp(ctk.CTk):
         cat_frame = _add_field(scroll, "Category")
         self._detail_category_var = ctk.StringVar(value=task.category or "None")
         ctk.CTkOptionMenu(
-            cat_frame, variable=self._detail_category_var,
-            values=list(CATEGORY_LABELS), width=140,
+            cat_frame,
+            variable=self._detail_category_var,
+            values=list(CATEGORY_LABELS),
+            width=140,
             command=lambda _: self._auto_save_detail(),
         ).pack(side="left")
 
         # Description
         ctk.CTkLabel(scroll, text="Description", anchor="w").pack(
-            fill="x", padx=10, pady=(10, 2),
+            fill="x",
+            padx=10,
+            pady=(10, 2),
         )
         self._detail_desc_textbox = ctk.CTkTextbox(scroll, height=100)
         self._detail_desc_textbox.pack(fill="x", padx=10, pady=(0, 10))
@@ -423,7 +518,10 @@ class TodoApp(ctk.CTk):
 
         # Delete button
         ctk.CTkButton(
-            scroll, text="Delete Task", fg_color="red", hover_color="darkred",
+            scroll,
+            text="Delete Task",
+            fg_color="red",
+            hover_color="darkred",
             command=self._delete_detail_task,
         ).pack(padx=10, pady=(5, 15))
 
@@ -506,9 +604,14 @@ class TodoApp(ctk.CTk):
 
         try:
             self._service.update_task(
-                task.id, title, desc,
-                priority=priority, category=category, due_date=due_date,
-                recurrence=recurrence, due_time=due_time,
+                task.id,
+                title,
+                desc,
+                priority=priority,
+                category=category,
+                due_date=due_date,
+                recurrence=recurrence,
+                due_time=due_time,
                 reminder_minutes=reminder_minutes,
             )
             self._detail_error_label.configure(text="")
@@ -529,34 +632,61 @@ class TodoApp(ctk.CTk):
 
     def _create_task_card(self, task):
         card = ctk.CTkFrame(
-            self._task_frame, fg_color=CARD_BG, corner_radius=10,
+            self._task_frame,
+            fg_color=CARD_BG,
+            corner_radius=10,
         )
         card.pack(fill="x", padx=5, pady=3)
 
         # Hover effect
         def on_enter(e):
-            card.configure(fg_color=("gray93", "#444444"))
+            if task.id not in self._selected_tasks:
+                card.configure(fg_color=("gray93", "#444444"))
 
         def on_leave(e):
-            card.configure(fg_color=CARD_BG)
+            if task.id not in self._selected_tasks:
+                card.configure(fg_color=CARD_BG)
+            else:
+                card.configure(fg_color=SIDEBAR_SELECTED)
 
         card.bind("<Enter>", on_enter)
         card.bind("<Leave>", on_leave)
 
-        # Left: checkbox
-        var = ctk.BooleanVar(value=task.is_completed)
-        cb = ctk.CTkCheckBox(
-            card, text="", variable=var, width=30,
-            fg_color=ACCENT_BLUE, hover_color=ACCENT_BLUE_HOVER,
-            command=lambda tid=task.id: self._toggle_task(tid),
-        )
-        cb.pack(side="left", padx=(12, 8), pady=10)
+        # Left: checkbox (completion or selection)
+        if self._selection_mode:
+            var = ctk.BooleanVar(value=task.id in self._selected_tasks)
+            cb = ctk.CTkCheckBox(
+                card,
+                text="",
+                variable=var,
+                width=30,
+                fg_color=ACCENT_BLUE,
+                hover_color=ACCENT_BLUE_HOVER,
+                command=lambda tid=task.id: self._toggle_selection(tid),
+            )
+            cb.pack(side="left", padx=(12, 8), pady=10)
+            # Highlight selected cards
+            if task.id in self._selected_tasks:
+                card.configure(fg_color=SIDEBAR_SELECTED)
+        else:
+            var = ctk.BooleanVar(value=task.is_completed)
+            cb = ctk.CTkCheckBox(
+                card,
+                text="",
+                variable=var,
+                width=30,
+                fg_color=ACCENT_BLUE,
+                hover_color=ACCENT_BLUE_HOVER,
+                command=lambda tid=task.id: self._toggle_task(tid),
+            )
+            cb.pack(side="left", padx=(12, 8), pady=10)
 
         # Center content
         center = ctk.CTkFrame(card, fg_color="transparent")
         center.pack(side="left", fill="x", expand=True, pady=8)
-        # Click body opens detail
-        center.bind("<Button-1>", lambda e, t=task: self._open_detail(t))
+        # Click body opens detail (only when not in selection mode)
+        if not self._selection_mode:
+            center.bind("<Button-1>", lambda e, t=task: self._open_detail(t))
 
         # Title
         title_color = COMPLETED_COLOR if task.is_completed else None
@@ -565,7 +695,8 @@ class TodoApp(ctk.CTk):
             title_kwargs["text_color"] = title_color
         title_lbl = ctk.CTkLabel(center, **title_kwargs)
         title_lbl.pack(anchor="w")
-        title_lbl.bind("<Button-1>", lambda e, t=task: self._open_detail(t))
+        if not self._selection_mode:
+            title_lbl.bind("<Button-1>", lambda e, t=task: self._open_detail(t))
 
         # Subtitle line
         parts = []
@@ -577,42 +708,208 @@ class TodoApp(ctk.CTk):
         if task.recurrence:
             parts.append(f"🔁 {task.recurrence}")
         if task.category:
-            parts.append(task.category)
+            CATEGORY_ICONS = {
+                "work": "[W]",
+                "home": "[H]",
+                "personal": "[P]",
+                "health": "[+]",
+                "finance": "[$]",
+                "other": "[*]",
+            }
+            icon = CATEGORY_ICONS.get(task.category, "[?]")
+            parts.append(f"{icon} {task.category}")
 
         if parts:
             sub_lbl = ctk.CTkLabel(
-                center, text="  ·  ".join(parts),
-                text_color="gray", font=ctk.CTkFont(size=11),
+                center,
+                text="  ·  ".join(parts),
+                text_color="gray",
+                font=ctk.CTkFont(size=11),
                 anchor="w",
             )
             sub_lbl.pack(anchor="w")
-            sub_lbl.bind("<Button-1>", lambda e, t=task: self._open_detail(t))
+            if not self._selection_mode:
+                sub_lbl.bind("<Button-1>", lambda e, t=task: self._open_detail(t))
 
-        # Right: star toggle
-        is_high = task.priority == "high"
-        star_text = "★" if is_high else "☆"
-        star_color = STAR_ACTIVE if is_high else STAR_INACTIVE
-        star_btn = ctk.CTkButton(
-            card, text=star_text, width=30,
-            fg_color="transparent", text_color=star_color,
-            hover_color=("gray85", "gray30"),
-            font=ctk.CTkFont(size=16),
-            command=lambda t=task: self._toggle_star(t),
-        )
-        star_btn.pack(side="right", padx=(0, 12), pady=10)
+        # Right: star toggle and "Add to My Day" button
+        right_frame = ctk.CTkFrame(card, fg_color="transparent")
+        right_frame.pack(side="right", padx=(0, 12), pady=10)
+
+        if not self._selection_mode:
+            is_high = task.priority == "high"
+            star_text = "★" if is_high else "☆"
+            star_color = STAR_ACTIVE if is_high else STAR_INACTIVE
+            star_btn = ctk.CTkButton(
+                right_frame,
+                text=star_text,
+                width=30,
+                fg_color="transparent",
+                text_color=star_color,
+                hover_color=("gray85", "gray30"),
+                font=ctk.CTkFont(size=16),
+                command=lambda t=task: self._toggle_star(t),
+            )
+            star_btn.pack(side="left", padx=(0, 5))
+
+            # Add to My Day button (only for non-completed tasks not already due today)
+            if not task.is_completed and task.due_date != date.today():
+                my_day_btn = ctk.CTkButton(
+                    right_frame,
+                    text="☀",
+                    width=30,
+                    fg_color="transparent",
+                    text_color=ACCENT_BLUE,
+                    hover_color=("gray85", "gray30"),
+                    font=ctk.CTkFont(size=16),
+                    command=lambda t=task: self._add_to_my_day(t),
+                )
+                my_day_btn.pack(side="left", padx=(0, 5))
 
     def _toggle_star(self, task):
         new_priority = "medium" if task.priority == "high" else "high"
         try:
             self._service.update_task(
-                task.id, task.title, task.description,
-                priority=new_priority, category=task.category,
-                due_date=task.due_date, recurrence=task.recurrence,
-                due_time=task.due_time, reminder_minutes=task.reminder_minutes,
+                task.id,
+                task.title,
+                task.description,
+                priority=new_priority,
+                category=task.category,
+                due_date=task.due_date,
+                recurrence=task.recurrence,
+                due_time=task.due_time,
+                reminder_minutes=task.reminder_minutes,
             )
         except (ValueError, KeyError):
             pass
         self._refresh_tasks()
+
+    def _add_to_my_day(self, task):
+        """Set task due date to today (add to My Day)."""
+        try:
+            self._service.update_task(
+                task.id,
+                task.title,
+                task.description,
+                priority=task.priority,
+                category=task.category,
+                due_date=date.today(),
+                recurrence=task.recurrence,
+                due_time=task.due_time,
+                reminder_minutes=task.reminder_minutes,
+            )
+        except (ValueError, KeyError):
+            pass
+        self._refresh_tasks()
+
+    def _toggle_selection(self, task_id: int):
+        """Toggle task selection for export."""
+        if task_id in self._selected_tasks:
+            self._selected_tasks.remove(task_id)
+        else:
+            self._selected_tasks.add(task_id)
+        self._refresh_tasks()
+
+    def _toggle_selection_mode(self):
+        """Toggle selection mode on/off."""
+        self._selection_mode = not self._selection_mode
+        self._selected_tasks.clear()
+        self._refresh_tasks()
+        # Update button text and export button visibility
+        if self._selection_mode:
+            self._select_mode_btn.configure(text="✕ Exit Selection")
+            self._export_btn.pack(side="left", padx=(0, 8))
+        else:
+            self._select_mode_btn.configure(text="☑ Select Tasks")
+            self._export_btn.pack_forget()
+
+    def _export_selected_to_markdown(self):
+        """Export selected tasks to a markdown file."""
+        if not self._selected_tasks:
+            return
+
+        # Get all tasks and filter selected
+        all_tasks = self._service.list_tasks()
+        selected_tasks = [t for t in all_tasks if t.id in self._selected_tasks]
+
+        if not selected_tasks:
+            return
+
+        # Build markdown content
+        lines = ["# Exported Tasks\n"]
+        for task in selected_tasks:
+            status = "x" if task.is_completed else " "
+            priority = (
+                "🔴" if task.priority == "high" else ("🟡" if task.priority == "medium" else "🟢")
+            )
+            due = f" 📅 {task.due_date}" if task.due_date else ""
+            time = f" ⏰ {task.due_time}" if task.due_time else ""
+            cat = f" 📁 {task.category}" if task.category else ""
+            recur = f" 🔁 {task.recurrence}" if task.recurrence else ""
+            desc = f"\n  {task.description}" if task.description else ""
+            lines.append(f"- [{status}] {priority} {task.title}{due}{time}{cat}{recur}{desc}")
+
+        markdown = "\n".join(lines)
+
+        # Save to file
+        from tkinter import filedialog
+
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".md",
+            filetypes=[("Markdown files", "*.md"), ("All files", "*.*")],
+            title="Export Tasks to Markdown",
+            initialfile="tasks_export.md",
+        )
+        if file_path:
+            try:
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(markdown)
+                # Show success message
+                self._show_export_success(file_path)
+            except Exception as e:
+                self._show_export_error(str(e))
+
+    def _show_export_success(self, file_path):
+        """Show success popup after export."""
+        popup = ctk.CTkToplevel(self)
+        popup.title("Export Complete")
+        popup.geometry("400x150")
+        popup.resizable(False, False)
+
+        def _build():
+            popup.grab_set()
+            popup.lift()
+            popup.focus_force()
+            ctk.CTkLabel(
+                popup,
+                text="✅ Tasks exported successfully!",
+                font=ctk.CTkFont(size=14, weight="bold"),
+            ).pack(pady=(20, 5))
+            ctk.CTkLabel(popup, text=f"Saved to:\n{file_path}", wraplength=350).pack(pady=5)
+            ctk.CTkButton(popup, text="OK", command=popup.destroy, width=100).pack(pady=15)
+
+        popup.after(200, _build)
+
+    def _show_export_error(self, error):
+        """Show error popup if export fails."""
+        popup = ctk.CTkToplevel(self)
+        popup.title("Export Failed")
+        popup.geometry("350x150")
+        popup.resizable(False, False)
+
+        def _build():
+            popup.grab_set()
+            popup.lift()
+            popup.focus_force()
+            ctk.CTkLabel(
+                popup,
+                text="❌ Export failed!",
+                font=ctk.CTkFont(size=14, weight="bold"),
+                text_color="red",
+            ).pack(pady=(20, 5))
+            ctk.CTkLabel(popup, text=error, wraplength=300).pack(pady=5)
+            ctk.CTkButton(popup, text="OK", command=popup.destroy, width=100).pack(pady=15)
+
+        popup.after(200, _build)
 
     # ── Task operations ──────────────────────────────────────────────
 
@@ -678,6 +975,35 @@ class TodoApp(ctk.CTk):
 
         dialog.after(200, _build_delete_widgets)
 
+    def _delete_all_completed(self):
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Confirm Delete All Completed")
+        dialog.geometry("350x150")
+        dialog.resizable(False, False)
+
+        def _build_delete_all_widgets():
+            dialog.grab_set()
+            dialog.lift()
+            dialog.focus_force()
+
+            ctk.CTkLabel(dialog, text="Delete all completed tasks?").pack(pady=20)
+            btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+            btn_frame.pack(pady=10)
+
+            def confirm():
+                self._service.delete_all_completed()
+                dialog.destroy()
+                self._refresh_tasks()
+
+            ctk.CTkButton(
+                btn_frame, text="Delete All", fg_color="red", command=confirm, width=80
+            ).pack(side="left", padx=10)
+            ctk.CTkButton(
+                btn_frame, text="Cancel", fg_color="gray", command=dialog.destroy, width=80
+            ).pack(side="left", padx=10)
+
+        dialog.after(200, _build_delete_all_widgets)
+
     # ── Refresh & filtering ──────────────────────────────────────────
 
     def _refresh_tasks(self):
@@ -711,8 +1037,12 @@ class TodoApp(ctk.CTk):
             category = view
 
         tasks = self._service.list_tasks(
-            search=search, status=status, priority=priority,
-            category=category, sort_by=sort_by, sort_order=sort_order,
+            search=search,
+            status=status,
+            priority=priority,
+            category=category,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
 
         for f in post_filters:
@@ -720,7 +1050,8 @@ class TodoApp(ctk.CTk):
 
         if not tasks:
             ctk.CTkLabel(
-                self._task_frame, text="No tasks found.",
+                self._task_frame,
+                text="No tasks found.",
                 text_color="gray",
             ).pack(pady=20)
         else:
@@ -734,15 +1065,9 @@ class TodoApp(ctk.CTk):
         today = date.today()
 
         counts = {
-            "my_day": sum(
-                1 for t in all_tasks if not t.is_completed and t.due_date == today
-            ),
-            "important": sum(
-                1 for t in all_tasks if not t.is_completed and t.priority == "high"
-            ),
-            "planned": sum(
-                1 for t in all_tasks if not t.is_completed and t.due_date is not None
-            ),
+            "my_day": sum(1 for t in all_tasks if not t.is_completed and t.due_date == today),
+            "important": sum(1 for t in all_tasks if not t.is_completed and t.priority == "high"),
+            "planned": sum(1 for t in all_tasks if not t.is_completed and t.due_date is not None),
             "all": len(all_tasks),
         }
         for cat in VALID_CATEGORIES:
@@ -755,6 +1080,7 @@ class TodoApp(ctk.CTk):
 
     def _show_reminder_popup(self, task_id: int, title: str, due_dt: datetime):
         """Show in-app reminder popup. Must be called via self.after() from main thread."""
+
         def _build():
             popup = ctk.CTkToplevel(self)
             popup.title("⏰ Reminder")
@@ -768,12 +1094,8 @@ class TodoApp(ctk.CTk):
                 ctk.CTkLabel(
                     popup, text=f"📋 {title}", font=ctk.CTkFont(size=14, weight="bold")
                 ).pack(pady=(15, 5))
-                ctk.CTkLabel(
-                    popup, text=f"Due: {due_dt.strftime('%Y-%m-%d %H:%M')}"
-                ).pack(pady=5)
-                ctk.CTkButton(
-                    popup, text="Dismiss", command=popup.destroy, width=100
-                ).pack(pady=10)
+                ctk.CTkLabel(popup, text=f"Due: {due_dt.strftime('%Y-%m-%d %H:%M')}").pack(pady=5)
+                ctk.CTkButton(popup, text="Dismiss", command=popup.destroy, width=100).pack(pady=10)
 
             popup.after(200, _build_content)
 

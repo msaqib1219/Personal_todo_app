@@ -49,12 +49,17 @@ class ReminderService:
                 reminder_min = task.reminder_minutes or DEFAULT_REMINDER_MINUTES
                 try:
                     hour, minute = map(int, task.due_time.split(":"))
-                    due_dt = datetime.combine(task.due_date, datetime.min.time().replace(
-                        hour=hour, minute=minute,
-                    ))
+                    due_dt = datetime.combine(
+                        task.due_date,
+                        datetime.min.time().replace(
+                            hour=hour,
+                            minute=minute,
+                        ),
+                    )
                 except (ValueError, AttributeError):
                     continue
                 from datetime import timedelta
+
                 trigger_at = due_dt - timedelta(minutes=reminder_min)
                 if trigger_at <= now:
                     task.reminder_sent = True
@@ -66,6 +71,7 @@ class ReminderService:
         # Desktop notification
         try:
             from plyer import notification
+
             notification.notify(
                 title="Todo Reminder",
                 message=f"{title}\nDue: {due_dt.strftime('%Y-%m-%d %H:%M')}",

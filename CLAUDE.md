@@ -212,6 +212,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 ## Active Technologies
 - Python 3.13 + CustomTkinter (GUI), SQLModel (ORM+validation), darkdetect (theme detection) (001-todo-app)
 - SQLite via SQLModel (local file at `~/.todo-app/tasks.db`) (001-todo-app)
+- Python 3.13 (backend), TypeScript (frontend, Next.js 16) (002-fullstack-web)
+- Neon Serverless PostgreSQL (shared by both frontend auth tables and backend task tables) (002-fullstack-web)
 
 ## Recent Changes
 - 001-todo-app: Added Python 3.13 + CustomTkinter (GUI), SQLModel (ORM+validation), darkdetect (theme detection)

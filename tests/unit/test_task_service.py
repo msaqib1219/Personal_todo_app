@@ -249,9 +249,8 @@ class TestReminderMinutesValidation:
 class TestToggleRecurrence:
     def test_toggle_creates_next_occurrence(self, service):
         from datetime import date
-        task = service.add_task(
-            "Daily task", due_date=date(2026, 3, 1), recurrence="daily"
-        )
+
+        task = service.add_task("Daily task", due_date=date(2026, 3, 1), recurrence="daily")
         service.toggle_task(task.id)
         tasks = service.list_tasks()
         assert len(tasks) == 2
@@ -271,9 +270,8 @@ class TestToggleRecurrence:
 
     def test_monthly_edge_case_jan31(self, service):
         from datetime import date
-        task = service.add_task(
-            "Monthly", due_date=date(2026, 1, 31), recurrence="monthly"
-        )
+
+        task = service.add_task("Monthly", due_date=date(2026, 1, 31), recurrence="monthly")
         service.toggle_task(task.id)
         tasks = service.list_tasks()
         new_task = [t for t in tasks if not t.is_completed][0]
@@ -281,9 +279,8 @@ class TestToggleRecurrence:
 
     def test_uncomplete_does_not_create_new(self, service):
         from datetime import date
-        task = service.add_task(
-            "Daily", due_date=date(2026, 3, 1), recurrence="daily"
-        )
+
+        task = service.add_task("Daily", due_date=date(2026, 3, 1), recurrence="daily")
         service.toggle_task(task.id)  # complete → creates new
         service.toggle_task(task.id)  # uncomplete → no new task
         assert len(service.list_tasks()) == 2

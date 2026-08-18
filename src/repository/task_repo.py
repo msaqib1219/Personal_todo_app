@@ -153,3 +153,13 @@ class TaskRepository:
         self._session.delete(task)
         self._session.commit()
         return True
+
+    def delete_all_completed(self) -> int:
+        """Delete all completed tasks. Returns count of deleted tasks."""
+        statement = select(Task).where(Task.is_completed == True)  # noqa: E712
+        tasks = list(self._session.exec(statement).all())
+        count = len(tasks)
+        for task in tasks:
+            self._session.delete(task)
+        self._session.commit()
+        return count
